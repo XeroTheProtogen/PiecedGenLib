@@ -1,0 +1,4 @@
+{
+  "piecedgenlib.cannot_set_spawn": "You aren't allowed to set spawn in this dimension currently",
+  "piecedgenlib.set_to_default_spawn": "Default spawn point detected! Setting spawn to there..."
+}
