@@ -12,9 +12,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -23,7 +23,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -55,6 +54,21 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         return !player.hasAttached(PGLDataAttachments.getDefaultRespawnPos()) && !player.hasAttached(PGLDataAttachments.getAllowedRespawnDimensions());
     }
 
+    @Unique
+    public TeleportTarget changeToDefaultSpawnPoint(TeleportTarget original) {
+        if (PGLib$lacksData()) {
+            return original;
+        }
+        RegistryKey<World> worldKey = original.world().getRegistryKey();
+        AllowedRespawnDimensions dimensions = getAttached(PGLDataAttachments.getAllowedRespawnDimensions());
+        if (dimensions.isDimensionAllowed(worldKey)) {
+            return original;
+        }
+        DefaultRespawnPos pos = getAttached(PGLDataAttachments.getDefaultRespawnPos());
+        return new TeleportTarget(this.server.getWorld(pos.getDimensionKey()),
+                pos.getPos().toCenterPos(), Vec3d.ZERO, 0.0F, 0.0F, false, original.postDimensionTransition());
+    }
+
     @Inject(method = "setSpawnPoint",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/BlockPos;equals(Ljava/lang/Object;)Z",
             shift = At.Shift.BEFORE), cancellable = true)
@@ -78,6 +92,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         if (PGLib$lacksData(instance)) {
                return true;
         }
+
         AllowedRespawnDimensions dimensions = instance.getAttached(PGLDataAttachments.getAllowedRespawnDimensions());
         if (dimensions.isDimensionAllowed(value) && dimensions.isDimensionAllowed(World.OVERWORLD)) {
             return true;
@@ -105,34 +120,15 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         return false;
     }
 
-    @ModifyArg(method = "getRespawnTarget",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/world/TeleportTarget;missingSpawnBlock(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/Entity;Lnet/minecraft/world/TeleportTarget$PostDimensionTransition;)Lnet/minecraft/world/TeleportTarget;"),
-    index = 0)
-    private ServerWorld PGLib$changeToDefaultWorld(ServerWorld world) {
-        if (PGLib$lacksData()) {
-            return world;
-        }
-
-        AllowedRespawnDimensions dimensions = getAttached(PGLDataAttachments.getAllowedRespawnDimensions());
-        if (dimensions.isDimensionAllowed(world.getRegistryKey())) {
-            return world;
-        }
-        DefaultRespawnPos defaultRespawnPos = getAttached(PGLDataAttachments.getDefaultRespawnPos());
-        return this.server.getWorld(defaultRespawnPos.getDimensionKey());
+    @ModifyReturnValue(method = "getRespawnTarget",
+    at = @At(value = "RETURN", ordinal = 1))
+    public TeleportTarget PGLib$changeToDefaultWorld(TeleportTarget original) {
+        return changeToDefaultSpawnPoint(original);
     }
 
     @ModifyReturnValue(method = "getRespawnTarget",
     at = @At(value = "RETURN", ordinal = 2))
     public TeleportTarget PGLib$changeToDefaultWorld2(TeleportTarget original) {
-        if (PGLib$lacksData()) {
-            return original;
-        }
-        RegistryKey<World> worldKey = original.world().getRegistryKey();
-        AllowedRespawnDimensions dimensions = getAttached(PGLDataAttachments.getAllowedRespawnDimensions());
-        if (dimensions.isDimensionAllowed(worldKey)) {
-            return original;
-        }
-        DefaultRespawnPos pos = getAttached(PGLDataAttachments.getDefaultRespawnPos());
-        return new TeleportTarget(this.server.getWorld(pos.getDimensionKey()), (ServerPlayerEntity)(Object)this, original.postDimensionTransition());
+        return changeToDefaultSpawnPoint(original);
     }
 }
