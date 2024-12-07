@@ -19,6 +19,13 @@ repositories {
 	// for more information about repositories.
 }
 
+sourceSets {
+	testmod {
+		runtimeClasspath += main.runtimeClasspath
+		compileClasspath += main.compileClasspath
+	}
+}
+
 fabricApi {
 	configureDataGeneration {
 		client = true
@@ -37,6 +44,9 @@ dependencies {
 
 	implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${project.mixin_extras_version}"))
 	include("io.github.llamalad7:mixinextras-fabric:${project.mixin_extras_version}:slim")
+
+	testmodImplementation sourceSets.main.output
+	testmodAnnotationProcessor sourceSets.main.output
 }
 
 processResources {
