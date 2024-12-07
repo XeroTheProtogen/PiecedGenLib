@@ -14,10 +14,19 @@ import net.minecraft.world.World
 object PlayerSpawnManipulator {
     @JvmStatic
     @JvmOverloads
+    fun initializePlayerDefaultSpawn(player: ServerPlayerEntity, spawnPos: BlockPos,
+                                     dimensionKey: RegistryKey<World>? = player.spawnPointDimension) {
+        changePlayerDefaultSpawn(player, spawnPos, dimensionKey)
+        if (dimensionKey != null) {
+            initializeAllowedDimensions(player, dimensionKey.value)
+        }
+    }
+
+    @JvmStatic
+    @JvmOverloads
     fun changePlayerDefaultSpawn(player: ServerPlayerEntity, spawnPos: BlockPos,
                                  dimensionKey: RegistryKey<World>? = player.spawnPointDimension) {
         val mutableDimensionKey: RegistryKey<World> = dimensionKey ?: player.spawnPointDimension
-
         player.setAttached(PGLDataAttachments.defaultRespawnPos, DefaultRespawnPos(spawnPos, mutableDimensionKey.value))
     }
 
@@ -29,8 +38,8 @@ object PlayerSpawnManipulator {
     }
 
     @JvmStatic
-    fun initializeAllowedDimensions(player: ServerPlayerEntity, dimensionIds: List<Identifier>) {
-        player.setAttached(PGLDataAttachments.allowedRespawnDimensions, AllowedRespawnDimensions(dimensionIds))
+    fun initializeAllowedDimensions(player: ServerPlayerEntity, dimensionIds: Identifier) {
+        player.setAttached(PGLDataAttachments.allowedRespawnDimensions, AllowedRespawnDimensions(listOf(dimensionIds)))
     }
 
     @JvmStatic
