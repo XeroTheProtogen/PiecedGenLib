@@ -3,5 +3,3 @@ jdk:
 before_install:
   - skd install java 21.0.5-tem
   - skd use java 21.0.5-tem
-  - sdk install maven
-  - mvn -v
