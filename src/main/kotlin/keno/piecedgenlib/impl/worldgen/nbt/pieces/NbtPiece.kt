@@ -29,7 +29,11 @@ class NbtPiece(private val templateName: Identifier,
 
     override fun placeNbtPiece(worldAccess: StructureWorldAccess, blockPos: BlockPos, offset: BlockPos): Boolean {
         val placer = StructurePlacer(worldAccess, templateName, blockPos, mirror, rotation, ignoreEntities, integrity, offset)
-        return placer.loadStructure()
+        val structureloaded = placer.loadStructure()
+        if (!structureloaded) {
+            PGLib.LOGGER.warn("Could not load structure")
+        }
+        return structureloaded
     }
 
     override fun pieceType(): PieceType<*> {

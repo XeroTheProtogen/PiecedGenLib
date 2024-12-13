@@ -42,11 +42,13 @@ class StructurePlacer(private val world: StructureWorldAccess, private val templ
             try {
                 optional = templateManager.getTemplate(this.templateName)
             } catch (e: InvalidIdentifierException) {
+                PGLib.LOGGER.warn("Identifier '$templateName' is invalid")
                 return false
             }
 
             return optional.isPresent && this.place(optional.get())
         }
+        PGLib.LOGGER.warn("Identifier '$templateName' is invalid #2")
         return false
     }
 
