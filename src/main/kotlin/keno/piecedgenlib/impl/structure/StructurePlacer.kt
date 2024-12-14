@@ -46,7 +46,12 @@ class StructurePlacer(private val world: StructureWorldAccess, private val templ
                 return false
             }
 
-            return optional.isPresent && this.place(optional.get())
+            val isPresent: Boolean = optional.isPresent
+            val canPlace: Boolean = this.place(optional.get())
+
+            PGLib.LOGGER.info("Optional present: $isPresent\nCan place: $canPlace")
+
+            return isPresent && canPlace
         }
         PGLib.LOGGER.warn("Identifier '$templateName' is invalid #2")
         return false
@@ -68,12 +73,8 @@ class StructurePlacer(private val world: StructureWorldAccess, private val templ
                 schedulePlacement(restoreTicks, saveFromWorld(world, blockPos.add(offset), size))
             }
 
-            val isPresent: Boolean = optional.isPresent
-            val canPlace: Boolean = this.place(optional.get())
 
-            PGLib.LOGGER.info("Optional present: $isPresent\nCan place: $canPlace")
-
-            return isPresent && canPlace
+            return optional.isPresent && this.place((optional.get()))
         } else {
             return false
         }
