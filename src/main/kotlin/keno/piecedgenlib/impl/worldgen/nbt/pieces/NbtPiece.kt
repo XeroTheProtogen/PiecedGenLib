@@ -40,7 +40,11 @@ class NbtPiece(private val templateName: Identifier,
                     if (templateManager.getTemplate(templateName).isPresent) {
                         val structure: StructureTemplate = templateManager.getTemplate(templateName).get()
                         val random = Random.create(world.seed)
-                        val data: StructurePlacementData = StructurePlacementData().setMirror(mirror).setRotation(rotation).setIgnoreEntities(ignoreEntities)
+                        val data: StructurePlacementData = StructurePlacementData()
+                            .setMirror(mirror)
+                            .setRotation(rotation)
+                            .setIgnoreEntities(ignoreEntities)
+                            .setPosition(blockPos)
                         structure.place(worldAccess, blockPos, blockPos, data, random, Block.NOTIFY_ALL)
                         return true
                     }
