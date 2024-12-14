@@ -4,11 +4,16 @@ import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import keno.piecedgenlib.impl.PGLib
-import keno.piecedgenlib.impl.structure.StructurePlacer
+import net.minecraft.block.Block
+import net.minecraft.server.world.ServerWorld
+import net.minecraft.structure.StructurePlacementData
+import net.minecraft.structure.StructureTemplate
+import net.minecraft.structure.StructureTemplateManager
 import net.minecraft.util.BlockMirror
 import net.minecraft.util.BlockRotation
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.random.Random
 import net.minecraft.world.StructureWorldAccess
 
 class NbtPiece(private val templateName: Identifier,
@@ -28,12 +33,22 @@ class NbtPiece(private val templateName: Identifier,
     }
 
     override fun placeNbtPiece(worldAccess: StructureWorldAccess, blockPos: BlockPos, offset: BlockPos): Boolean {
-        val placer = StructurePlacer(worldAccess, templateName, blockPos, mirror, rotation, ignoreEntities, integrity, offset)
-        val structureloaded = placer.loadStructure()
-        if (!structureloaded) {
-            PGLib.LOGGER.warn("Could not load structure")
+        try {
+            if (!worldAccess.isClient) {
+                val world: ServerWorld = worldAccess.toServerWorld()
+                    val templateManager: StructureTemplateManager = world.server.structureTemplateManager
+                    if (templateManager.getTemplate(templateName).isPresent) {
+                        val structure: StructureTemplate = templateManager.getTemplate(templateName).get()
+                        val random = Random.create(world.seed)
+                        val data: StructurePlacementData = StructurePlacementData().setMirror(mirror).setRotation(rotation).setIgnoreEntities(ignoreEntities)
+                        structure.place(worldAccess, blockPos, blockPos, data, random, Block.NOTIFY_ALL)
+                        return true
+                    }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        return structureloaded
+        return false
     }
 
     override fun pieceType(): PieceType<*> {
