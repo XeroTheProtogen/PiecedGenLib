@@ -67,7 +67,13 @@ class StructurePlacer(private val world: StructureWorldAccess, private val templ
             if (!world.isClient) {
                 schedulePlacement(restoreTicks, saveFromWorld(world, blockPos.add(offset), size))
             }
-            return optional.isPresent && this.place(optional.get())
+
+            val isPresent: Boolean = optional.isPresent
+            val canPlace: Boolean = this.place(optional.get())
+
+            PGLib.LOGGER.info("Optional present: $isPresent\nCan place: $canPlace")
+
+            return isPresent && canPlace
         } else {
             return false
         }
