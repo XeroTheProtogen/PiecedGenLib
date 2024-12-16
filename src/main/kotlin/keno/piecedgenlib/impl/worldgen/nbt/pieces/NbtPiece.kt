@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import keno.piecedgenlib.impl.PGLib
-import net.minecraft.block.Block
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.structure.StructurePlacementData
 import net.minecraft.structure.StructureTemplate
@@ -32,7 +31,7 @@ class NbtPiece(private val templateName: Identifier,
             ).apply(instance, ::NbtPiece)}
     }
 
-    override fun placeNbtPiece(worldAccess: StructureWorldAccess, blockPos: BlockPos, offset: BlockPos): Boolean {
+    override fun placeNbtPiece(worldAccess: StructureWorldAccess, blockPos: BlockPos): Boolean {
         try {
             if (!worldAccess.isClient) {
                 val world: ServerWorld = worldAccess.toServerWorld()
@@ -45,8 +44,10 @@ class NbtPiece(private val templateName: Identifier,
                             .setMirror(mirror)
                             .setRotation(rotation)
                             .setIgnoreEntities(ignoreEntities)
-                            .setPosition(blockPos)
-                        structure.place(worldAccess, blockPos, blockPos, data, random, Block.NOTIFY_ALL)
+
+                        val structurePos: BlockPos = blockPos.add(offset.x, offset.y, offset.z)
+
+                        structure.place(worldAccess, structurePos, structurePos, data, random, 2)
                         return true
                     }
             }
