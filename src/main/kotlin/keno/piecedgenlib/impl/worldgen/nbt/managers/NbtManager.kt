@@ -26,7 +26,7 @@ open class NbtManager(private val nbtPieces: HashMap<Identifier, ArrayList<NbtPi
 
     @JvmOverloads
     fun placeRandomNbtPiece(world: StructureWorldAccess, seed: Long = world.seed, poolId: Identifier,
-                            pos: BlockPos, offset: BlockPos = BlockPos(0,0,0)): Boolean {
+                            pos: BlockPos, offset: BlockPos? = BlockPos(0,0,0)): Boolean {
         val nbtPiece: NbtPiece = getRandomNbtPiece(poolId, seed)
         return nbtPiece.placeNbtPiece(world, pos, offset)
     }

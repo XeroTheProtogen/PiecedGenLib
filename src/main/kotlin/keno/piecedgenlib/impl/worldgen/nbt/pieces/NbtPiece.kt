@@ -31,7 +31,7 @@ class NbtPiece(private val templateName: Identifier,
             ).apply(instance, ::NbtPiece)}
     }
 
-    override fun placeNbtPiece(worldAccess: StructureWorldAccess, blockPos: BlockPos): Boolean {
+    override fun placeNbtPiece(worldAccess: StructureWorldAccess, blockPos: BlockPos, offset: BlockPos?): Boolean {
         try {
             if (!worldAccess.isClient) {
                 val world: ServerWorld = worldAccess.toServerWorld()
@@ -45,7 +45,11 @@ class NbtPiece(private val templateName: Identifier,
                             .setRotation(rotation)
                             .setIgnoreEntities(ignoreEntities)
 
-                        val structurePos: BlockPos = blockPos.add(offset.x, offset.y, offset.z)
+                        val structurePos: BlockPos = if (offset != null) {
+                            blockPos.add(offset.x, offset.y, offset.z)
+                        } else {
+                            blockPos.add(this.offset.x, this.offset.y, this.offset.z)
+                        }
 
                         structure.place(worldAccess, structurePos, structurePos, data, random, 2)
                         return true

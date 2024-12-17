@@ -13,7 +13,7 @@ abstract class AbstractNbtPiece(private val templateName: Identifier?,
         return pieceType()
     }
 
-    abstract fun placeNbtPiece(worldAccess: StructureWorldAccess, blockPos: BlockPos): Boolean
+    abstract fun placeNbtPiece(worldAccess: StructureWorldAccess, blockPos: BlockPos, offset: BlockPos?): Boolean
 
     abstract fun pieceType(): PieceType<*>
 }
